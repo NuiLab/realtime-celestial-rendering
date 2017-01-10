@@ -1,0 +1,18 @@
+# Editors
+.vscode
+*.vscodeLog
+
+# OS
+*.db
+*.DS_Store
+
+# Build
+*.log
+*.aux
+*.bbl
+*.blg
+*.gz
+*.db
+*.fls
+*.fdb_latexmk
+*.idlk
