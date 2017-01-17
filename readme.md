@@ -36,7 +36,7 @@ Installing the plugin on your project is simply a matter of copying the folder `
 After installing, create a blueprint class that inherits from the StarySkybox class. This is an actor that you can place in your scene to render the sky. You can configure any of the defaults directly from the Blueprint class interface.
 
 [cover-img]: images/asteroids.png
-[release-img]: https://img.shields.io/badge/unreal-4.14.0-2a2a2a.svg?style=flat-square
+[release-img]: https://img.shields.io/badge/unreal-4.14.3-2a2a2a.svg?style=flat-square
 [license-img]: http://img.shields.io/:license-mit-blue.svg?style=flat-square
 [license-url]: https://opensource.org/licenses/MIT  
 [3dui-img]: https://img.shields.io/badge/3dui-2017-1ab7ea.svg?style=flat-square
