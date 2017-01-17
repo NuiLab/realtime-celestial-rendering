@@ -23,15 +23,27 @@ This paper proposes a technique to render a parametric celestial skybox with the
 
 Download any Latex compiler such as [TeX Live](https://www.tug.org/texlive/) or [MiKTeX](https://miktex.org/) to compile the latex.
 
+```bash
+# Building a PDF
+cd paper/
+biblatex paper.bib
+pdflatex paper.tex
+pdflatex paper.tex
+```
+
+To compile the poster, you'll need to open `poster.indd` with [Adobe InDesign CC](http://www.adobe.com/products/indesign.html), and go to `File > Export`.
+
 ### Unreal Project
 
-To run the Unreal example, install the latest version of [Unreal Engine 4](https://www.unrealengine.com/download), then right click on `./unreal-project/celestial-demo.uproject` and generate a solution for your operating system.
+First install the latest version of [Unreal Engine 4](https://www.unrealengine.com/download), then right click on `./unreal-project/celestial-demo.uproject` and generate a solution for your operating system. 
+
+From there run **Local Windows Debugger** to open Unreal's Level Editor.
 
 #### Unreal Plugin
 
-Installing the plugin on your project is simply a matter of copying the folder `./unreal-project/Plugins/StarySkybox` to your project's `Plugins` folder.
+To install the plugin, copy the folder `./unreal-project/Plugins/StarySkybox` to your project's `Plugins` folder.
 
-## Usage
+##### Usage
 
 After installing, create a blueprint class that inherits from the StarySkybox class. This is an actor that you can place in your scene to render the sky. You can configure any of the defaults directly from the Blueprint class interface.
 
