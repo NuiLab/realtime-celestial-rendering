@@ -1,0 +1,21 @@
+{
+    "FileVersion" : 1,
+	
+	"FriendlyName" : "Skybox Shader",
+	"Version" : 1,
+	"VersionName" : "1.0",
+	"CreatedBy" : "Alain Galvan",
+	"CreatedByURL" : "http://alain.xyz",
+	"EngineVersion" : "4.9.0",
+	"Description" : "Renders a given shaderfile onto a cubemap.",
+	"Category" : "Rendering",
+
+    "Modules" :
+	[
+		{
+			"Name" : "SkyboxShader",
+			"Type" : "Runtime",
+			"LoadingPhase" : "PostConfigInit"
+		}
+	]
+}
