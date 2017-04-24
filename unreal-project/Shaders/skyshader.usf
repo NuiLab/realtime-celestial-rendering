@@ -1,0 +1,188 @@
+#include "Common.usf"
+#include "Random.usf"
+
+void MainVertexShader(
+	float4 InPosition : ATTRIBUTE0,
+	float2 InUV : ATTRIBUTE1,
+	out float2 OutUV : TEXCOORD0,
+	out float4 OutPosition : SV_POSITION
+	)
+{
+	OutPosition = InPosition;
+	OutUV = InUV;
+}
+
+/**************************************************************
+* Constants
+**************************************************************/
+
+float3 hash33(float3 p){ 
+    
+    float n = sin(dot(p, float3(7, 157, 113)));    
+    return frac(float3(2097152, 262144, 32768)*n); 
+}
+
+
+float voronoi(float3 p){
+
+	float3 b, r, g = floor(p);
+	p = frac(p);
+		float d = 1.; 
+	for(float j = -1.; j < 1.01; j++) {
+	    for(float i = -1.; i < 1.01; i++) {
+    		
+		    b = float3(i, j, -1.);
+		    r = b - p + hash33(g+b);
+		    d = min(d, dot(r,r));
+    		
+		    b.z = 0.0;
+		    r = b - p + hash33(g+b);
+		    d = min(d, dot(r,r));
+    		
+		    b.z = 1.;
+		    r = b - p + hash33(g+b);
+		    d = min(d, dot(r,r));
+    			
+	    }
+	}
+	
+	return d; 
+}
+
+float noiseLayers(float3 p, float time) {
+
+
+    float3 t = float3(0., 0., p.z + time * 2.5);
+
+    const int iter = 3;
+    float tot = 0., sum = 0., amp = 1.;
+
+    for (int i = 0; i < iter; i++) {
+        tot += voronoi(p + t) * amp;
+        p *= 2.0;
+        t *= 1.5;
+        sum += amp;
+        amp *= 0.5;
+    }
+    
+    return tot/sum;
+}
+
+float4 voronoi( float3 rd, float time) {
+	float cs = cos(time*0.25); 
+	float si = sin(time*0.25);
+
+	float2x2 matt = {cs, -si, si, cs};
+	rd.xy = mul(rd.xy, matt); 
+	float c = noiseLayers(rd*2., time);
+
+	c = max(c + dot(hash33(rd)*2.-1., 0.015), 0.);
+
+    c *= sqrt(c)*1.5;
+    float3 col = float3(c,c,c); 
+    return float4(lerp(col, col.zyx*0.1+c*0.9, (1.+rd.x+rd.y)*0.45 ), 1.); 
+}
+
+float hash(float n) { return frac(sin(n) * 1e4); }
+float hash(float2 p) { return frac(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
+float nnoise(float x) { float i = floor(x); float f = frac(x); float u = f * f * (3.0 - 2.0 * f); return lerp(hash(i), hash(i + 1.0), u); }
+float nnoise(float2 x) { float2 i = floor(x); float2 f = frac(x);	float a = hash(i); float b = hash(i + float2(1.0, 0.0)); float c = hash(i + float2(0.0, 1.0)); float d = hash(i + float2(1.0, 1.0)); float2 u = f * f * (3.0 - 2.0 * f); return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y; }
+float hash2(float2 co) { return frac(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453); }
+float maxComponent(float2 v) { return max(v.x, v.y); }
+float maxComponent(float3 v) { return max(max(v.x, v.y), v.z); }
+float minComponent(float2 v) { return min(v.x, v.y); }
+float2 cmul( float2 a, float2 b )  { return float2( a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x ); }
+float2 csqr( float2 a )  { return float2( a.x*a.x - a.y*a.y, 4.*a.x*a.y  ); }
+
+
+float3 nebula(float3 dir) {
+    float purple = abs(dir.x);
+    float yellow = nnoise(dir.y);
+    float3 streakyHue = float3(purple + yellow, yellow * 0.7, purple);
+    float3 puffyHue = float3(0.8, 0.1, 1.0);
+
+    float streaky = min(1.0, 8.0 * pow(nnoise(dir.yz * (dir.x*dir.x) * 13.0 + dir.xy * (dir.z*dir.z) * 7.0 + float2(150.0, 2.0)), 10.0));
+    float puffy = nnoise(dir.xz * 8.0 + float2(30, 10)) * dir.y;
+
+    return clamp(puffyHue * puffy * (1.0 - streaky) + streaky * streakyHue, 0.0, 1.0);
+}
+
+float field(float3 p, float s, float time) {
+	float strength = 7. + .03 * log(1.e-6 + frac(sin(time) * 4373.11));
+	float accum = s/4.;
+	float prev = 0.;
+	float tw = 0.;
+	for (int i = 0; i < 26; ++i) {
+		float mag = dot(p, p);
+		p = abs(p) / mag + float3(-.5, -.4, -1.5);
+		float w = exp(-float(i) / 7.);
+		accum += w * exp(-strength * pow(abs(mag - prev), 2.2));
+		tw += w;
+		prev = mag;
+	}
+	return max(0., 5. * accum / tw - .7);
+}
+
+// Star Nest by Pablo Roman Andrioli
+// This content is under the MIT License.
+#define iterations 16
+#define formuparam 0.53
+#define volsteps 20
+#define stepsize 0.1
+#define zoom   0.800
+#define tile   2.0
+#define speed  0.010 
+#define brightness 0.0015
+#define darkmatter 0.320
+#define distfading 0.730
+#define saturation 0.850
+
+#define DISTMARCH_STEPS 256
+#define DISTMARCH_MAXDIST 50.
+#define PIOVERFOUR 0.785398163395
+#define PI 3.14159265359
+
+float3 starfield(float3 dir, float time) {
+    //mouse rotation
+    float3 from = float3(0., 0., 0.);
+
+    //volumetric rendering
+    float s = 0.1, fade = 1.;
+    float3 v = 0.;
+    for (int r = 0; r < volsteps; r++) {
+        float3 p = from + s * dir * (.5 + time);
+        p = abs(tile - fmod(p, (tile * 2.))); // tiling fold
+        float pa, a = pa = 0.;
+        for (int i = 0; i < iterations; i++) {
+            p = abs(p) / dot(p, p) - formuparam; // the magic formula
+            a += abs(length(p) - pa); // absolute sum of average change
+            pa = length(p);
+        }
+        float dm = max(0., darkmatter - a * a * .001); //dark matter
+        a *= a * a; // add contrast
+        if (r > 6) fade *= 1. - dm; // dark matter, don't render near
+        //v+=float3(dm,dm*.5,0.);
+        v += fade;
+        v += float3(s, s * s, s * s * s * s) * a * brightness * fade; // coloring based on distance
+        fade *= distfading; // distance fading
+        s += stepsize;
+    }
+    v = lerp(length(v), v, saturation); //color adjust
+    return v * .01;
+
+}
+
+
+void MainPixelShader(
+	in float2 UV : TEXCOORD0,
+	out float4 OutColor : SV_Target0
+	)
+{
+	float iGlobalTime = PSVariables.TotalTimeElapsedSeconds * 0.01;
+	float4 dir = normalize(mul(PSVariables.ViewMatrix, float4(UV-float2(0.5, 0.5), .5, 0.)));
+
+	//float latLong = (1.0 - pow(smoothstep(0.0, 0.04, min(abs(frac(atan(dir.z / length(dir.xy)) / (PI/8.)) - 0.5), abs(frac(atan(dir.x / dir.y) / (PI/8.)) - 0.5)) * 2.0), 10.0));
+	//Draw Sky
+	OutColor.a = 1.0;
+    OutColor.rgb = starfield(dir.xyz, iGlobalTime) + (0.2 * voronoi(dir.xyz, iGlobalTime));
+}
