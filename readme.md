@@ -8,9 +8,13 @@
 
 This paper proposes a technique to render a parametric celestial skybox with the ability to light environments similar to natural color corrected images from telescopes. We first precompute a ray map that coresponds to the view frustrum of the main camera to optimize updates to the cubemap environment, then render a physically accurate sky with a shader applied to that region of the cubemap. 
 
-![Unreal Animation Demo](images/gameanimation.gif)
-
 Our System integrates easily with **Unreal Engine 4** through a [plugin](unreal-project/Plugins/StarySkybox) we provide.
+
+## Screenshots
+
+| |  |
+|:--:|:--:|
+| ![Unreal Animation Demo](images/gameanimation.gif) | ![Volumetric Noise](images/gameanimationvoronoi.gif) |
 
 ## Setup
 
