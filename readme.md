@@ -15,12 +15,12 @@ Our System integrates easily with **Unreal Engine 4** through a [plugin](unreal-
 ## Setup
 
 ```bash
-|- paper/                     # Paper and poster source files
-|- unreal-project/            # Example Unreal Engine 4 Project
-  |- Plugins/
-    |- StarySkybox/           # Plugin Location
-  |- celestialdemo.uproject
-|- readme.md
+├─ paper/                     # Paper and poster source files
+├─ unreal-project/            # Example Unreal Engine 4 Project
+│  ├─ Plugins/
+│  ├─ StarySkybox/           # Plugin Location
+│  └─ celestialdemo.uproject
+└─ readme.md
 ```
 
 ### Research Paper
